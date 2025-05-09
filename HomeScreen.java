@@ -10,6 +10,8 @@ import java.util.List;
 public class HomeScreen extends JPanel {
 
     private static JFrame frame;
+    private static JPanel mainPanel;
+    private static CardLayout cardLayout;
 
     public static void createHomeScreen() {
 
@@ -25,8 +27,21 @@ public class HomeScreen extends JPanel {
         //sets the location to the middle of the screen
         frame.setLocationRelativeTo(null);
 
+        // Set up CardLayout
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+
+        JPanel mode1Screen = new DrawTheFunction(() -> cardLayout.show(mainPanel, "Home"));
+        JPanel mode2Screen = new FunctionBuilder(() -> cardLayout.show(mainPanel, "Home"));
+
+        // Add screens to the card layout
+        mainPanel.add(mode1Screen, "Mode1");
+        mainPanel.add(mode2Screen, "Mode2");
+
         // Add panel to frame
-        frame.add(createJPanel());
+        mainPanel.add(createJPanel(), "Home");
+        cardLayout.show(mainPanel, "Home");
+        frame.add(mainPanel);
 
 
         frame.setVisible(true);
@@ -50,7 +65,7 @@ public class HomeScreen extends JPanel {
         mode1Button.setAlignmentX(Component.CENTER_ALIGNMENT);
         mode1Button.setMaximumSize(new Dimension(250, 40));
         mode1Button.setFocusPainted(false);
-        mode1Button.addActionListener(e -> JOptionPane.showMessageDialog(frame, "Mode 1 Selected"));
+        mode1Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode1"));
 
         // Spacer
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -60,7 +75,7 @@ public class HomeScreen extends JPanel {
         mode2Button.setAlignmentX(Component.CENTER_ALIGNMENT);
         mode2Button.setMaximumSize(new Dimension(250, 40));
         mode2Button.setFocusPainted(false);
-        mode2Button.addActionListener(e -> JOptionPane.showMessageDialog(frame, "Mode 2 Selected"));
+        mode2Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode2"));
 
         // Add components to panel
         panel.add(titleLabel);
