@@ -9,8 +9,10 @@ import java.util.List;
 
 public class DrawTheFunction extends JPanel {
     public DrawTheFunction(Runnable onBack) {
+        // Setting the layout for the panel
         setLayout(new BorderLayout());
 
+        // Creating a label with a welcome message
         JLabel label = new JLabel("🧩 Welcome to Transformation Challenge", SwingConstants.CENTER);
         label.setFont(new Font("SansSerif", Font.BOLD, 20));
 

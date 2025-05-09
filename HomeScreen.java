@@ -13,6 +13,9 @@ public class HomeScreen extends JPanel {
     private static JPanel mainPanel;
     private static CardLayout cardLayout;
 
+    /**
+     * Creates the home screen with two buttons to select ame mode
+     */
     public static void createHomeScreen() {
 
         //intializes and declares JFrame
@@ -48,36 +51,40 @@ public class HomeScreen extends JPanel {
 
     }
 
+    /**
+     * Creates the main JPanel with buttons for each game mode
+     * @return
+     */
     private static JPanel createJPanel() {
         // Create a panel for content
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(Color.WHITE);
 
-        // Title label
+        // Title label with fonts 
         JLabel titleLabel = new JLabel("Choose a Game Mode");
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(30, 0, 20, 0));
 
-        // Button for Game Mode 1
+        // Button for Game Mode 1 that switches the layout upon click
         JButton mode1Button = new JButton("Function Builder");
         mode1Button.setAlignmentX(Component.CENTER_ALIGNMENT);
         mode1Button.setMaximumSize(new Dimension(250, 40));
         mode1Button.setFocusPainted(false);
         mode1Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode1"));
 
-        // Spacer
+        // Spacer for aethetics
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Button for Game Mode 2
+        // Button for Game Mode 2 that switches the layout upon click
         JButton mode2Button = new JButton("Draw the Function");
         mode2Button.setAlignmentX(Component.CENTER_ALIGNMENT);
         mode2Button.setMaximumSize(new Dimension(250, 40));
         mode2Button.setFocusPainted(false);
         mode2Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode2"));
 
-        // Add components to panel
+        // Adding each component to panel
         panel.add(titleLabel);
         panel.add(mode1Button);
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
