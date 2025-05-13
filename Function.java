@@ -83,7 +83,7 @@ public class Function {
 
     /**
      * Get the expression string
-     * @return
+     * @return the expression string
      */
     public String getExpressionString() {
         return expressionString;
