@@ -85,7 +85,7 @@ public class Function {
      * Get the expression string
      * @return
      */
-    public Expression getExpression() {
-        return expression;
+    public String getExpressionString() {
+        return expressionString;
     }
 }
