@@ -3,10 +3,12 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 
 public class Function {
     private final Expression expression;
+    private final String expressionString;
 
     //Constructor given an expression string
     public Function(String expression) {
         this.expression = new ExpressionBuilder(expression).variable("x").build();
+        this.expressionString = expression;
     }
     
     //Constructor that generates a random expression
@@ -67,6 +69,7 @@ public class Function {
             this.expression = new ExpressionBuilder(expressionBuilder.toString())
                                 .variable("x")
                                 .build();
+            this.expressionString = expressionBuilder.toString();
     }
 
     /**
