@@ -7,11 +7,11 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunctionBuilder extends JPanel {
-    public FunctionBuilder(Runnable onBack) {
+public class GuessTheFunction extends JPanel {
+    public GuessTheFunction(Runnable onBack) {
         setLayout(new BorderLayout());
 
-        JLabel label = new JLabel("🎯 Welcome to Guess the Function", SwingConstants.CENTER);
+        JLabel label = new JLabel("Welcome to Guess the Function", SwingConstants.CENTER);
         label.setFont(new Font("SansSerif", Font.BOLD, 20));
 
         JButton backButton = new JButton("← Back to Home");
