@@ -24,4 +24,5 @@ public class Function {
      */
     public Expression getExpression() {
         return expression;
+    }
 }

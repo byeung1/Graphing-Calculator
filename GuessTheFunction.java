@@ -11,13 +11,19 @@ public class GuessTheFunction extends JPanel {
     public GuessTheFunction(Runnable onBack) {
         setLayout(new BorderLayout());
 
-        JLabel label = new JLabel("Welcome to Guess the Function", SwingConstants.CENTER);
-        label.setFont(new Font("SansSerif", Font.BOLD, 20));
+
+        // Example: y = sin(x)
+        //Function func = new Function("sin(x)");
+        ArrayList<Function> func = new ArrayList<>();
+        func.add(new Function("sin(x)"));
+        func.add(new Function("x + 1"));
+        GraphPanel panel = new GraphPanel(func);
+            
 
         JButton backButton = new JButton("← Back to Home");
         backButton.addActionListener(e -> onBack.run());
 
-        add(label, BorderLayout.CENTER);
+        add(panel, BorderLayout.CENTER);
         add(backButton, BorderLayout.SOUTH);
     }
 }
