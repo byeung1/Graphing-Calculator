@@ -10,7 +10,7 @@ import java.util.*;
 public class GraphPanel extends JPanel {
 
     private final Function function; // The function to plot
-    private final ArrayList<Function> functionList;
+    private ArrayList<Function> functionList;
 
     // Constructor that accepts a Function object
     public GraphPanel(Function function) {
@@ -25,6 +25,10 @@ public class GraphPanel extends JPanel {
         function = null;
         setPreferredSize(new Dimension(800, 600)); // Set default size
         setBackground(Color.WHITE); // Set background color
+    }
+
+    public void addFunction(Function f) {
+        functionList.add(f);
     }
 
     @Override

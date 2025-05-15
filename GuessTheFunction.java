@@ -14,10 +14,10 @@ public class GuessTheFunction extends JPanel {
 
         // Example: y = sin(x)
         //Function func = new Function("sin(x)");
-        ArrayList<Function> func = new ArrayList<>();
-        func.add(new Function("sin(x)"));
-        func.add(new Function("x + 1"));
-        GraphPanel panel = new GraphPanel(func);
+        //ArrayList<Function> func = new ArrayList<>();
+        //func.add(new Function());
+        //func.add(new Function());
+        GraphPanel panel = new GraphPanel(new Function());
             
 
         JButton backButton = new JButton("← Back to Home");
