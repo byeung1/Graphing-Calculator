@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * GraphPanel is a custom JPanel that plots a mathematical Function.
@@ -11,11 +12,13 @@ public class GraphPanel extends JPanel {
 
     private final Function function; // The function to plot
     private ArrayList<Function> functionList;
+    private List<Point> userDrawnPoints; // Points drawn by the user
 
     // Constructor that accepts a Function object
     public GraphPanel(Function function) {
         this.function = function;
         functionList = null;
+        userDrawnPoints = new ArrayList<>();
         setPreferredSize(new Dimension(800, 600)); // Set default size
         setBackground(Color.WHITE); // Set background color
     }
@@ -23,12 +26,22 @@ public class GraphPanel extends JPanel {
     public GraphPanel(ArrayList<Function> functionList) {
         this.functionList = functionList;
         function = null;
+        userDrawnPoints = new ArrayList<>();
         setPreferredSize(new Dimension(800, 600)); // Set default size
         setBackground(Color.WHITE); // Set background color
     }
 
     public void addFunction(Function f) {
         functionList.add(f);
+    }
+    
+    /**
+     * Sets the list of points drawn by the user
+     * @param points The list of points
+     */
+    public void setUserDrawnPoints(List<Point> points) {
+        this.userDrawnPoints = points;
+        repaint();
     }
 
     @Override
@@ -53,6 +66,30 @@ public class GraphPanel extends JPanel {
         g2.setColor(Color.GRAY);
         g2.drawLine(0, originY, width, originY);   // X-axis
         g2.drawLine(originX, 0, originX, height);  // Y-axis
+        
+        // Draw grid lines
+        g2.setColor(new Color(230, 230, 230));
+        g2.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 
+                     10.0f, new float[]{2.0f}, 0.0f));
+        
+        // Draw horizontal grid lines
+        for (int y = originY - (int)yScale; y >= 0; y -= yScale) {
+            g2.drawLine(0, y, width, y);
+        }
+        for (int y = originY + (int)yScale; y <= height; y += yScale) {
+            g2.drawLine(0, y, width, y);
+        }
+        
+        // Draw vertical grid lines
+        for (int x = originX - (int)xScale; x >= 0; x -= xScale) {
+            g2.drawLine(x, 0, x, height);
+        }
+        for (int x = originX + (int)xScale; x <= width; x += xScale) {
+            g2.drawLine(x, 0, x, height);
+        }
+        
+        // Reset stroke
+        g2.setStroke(new BasicStroke(1.0f));
 
         // Plot the function in blue
         g2.setColor(Color.BLUE);
@@ -97,6 +134,17 @@ public class GraphPanel extends JPanel {
                 }
             }
         }
+        
+        // Draw the user's drawn points
+        if (userDrawnPoints != null && userDrawnPoints.size() > 1) {
+            g2.setColor(Color.RED);
+            g2.setStroke(new BasicStroke(2.5f));
+            
+            for (int i = 0; i < userDrawnPoints.size() - 1; i++) {
+                Point p1 = userDrawnPoints.get(i);
+                Point p2 = userDrawnPoints.get(i + 1);
+                g2.draw(new Line2D.Double(p1.x, p1.y, p2.x, p2.y));
+            }
+        }
     }
-
 }
