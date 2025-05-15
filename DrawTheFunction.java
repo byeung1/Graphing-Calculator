@@ -55,7 +55,7 @@ public class DrawTheFunction extends JPanel {
     private void generateNewFunction() {
         currentFunction = new Function();
         functionLabel.setText("f(x) = " + currentFunction.getExpressionString());
-        GraphPanel graphPanel = new GraphPanel(currentFunction);
+        GraphPanel graphPanel = new GraphPanel(currentFunction, true);
         add(graphPanel, BorderLayout.CENTER);
     }
 }
