@@ -1,18 +1,24 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Line2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * GraphPanel is a custom JPanel that can optionally draw a mathematical function.
  */
 public class GraphPanel extends JPanel {
 
-    private final Function function;     // The function to be plotted
+    private Function function;     // The function to be plotted
     private boolean drawFunction = false; // Whether the function should be drawn
+    private boolean drawingMode = false;  // Whether we're in drawing mode
+    private List<List<Point>> lineSegments = new ArrayList<>(); // List of line segments
+    private List<Point> currentSegment = new ArrayList<>(); // Current line segment being drawn
+    private List<Point> userDrawnPoints = new ArrayList<>(); // Points to keep visible after submission
+    private boolean controlsEnabled = true; // Whether zoom/pan controls are enabled
     
     // Window bounds
     private double xMin = -10;
@@ -44,6 +50,36 @@ public class GraphPanel extends JPanel {
         
         // Create axis labels
         createAxisLabels();
+        
+        // Add mouse listeners for drawing
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (drawingMode) {
+                    currentSegment = new ArrayList<>();
+                    currentSegment.add(e.getPoint());
+                    lineSegments.add(currentSegment);
+                    repaint();
+                }
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (drawingMode && !currentSegment.isEmpty()) {
+                    currentSegment = new ArrayList<>();
+                }
+            }
+        });
+        
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (drawingMode && !currentSegment.isEmpty()) {
+                    currentSegment.add(e.getPoint());
+                    repaint();
+                }
+            }
+        });
     }
 
     /**
@@ -72,6 +108,9 @@ public class GraphPanel extends JPanel {
         JButton panLeftButton = new JButton("←");
         JButton panRightButton = new JButton("→");
         
+        // Undo button
+        JButton undoButton = new JButton("Undo");
+        
         // Add action listeners
         zoomInButton.addActionListener(e -> zoom(0.8));
         zoomOutButton.addActionListener(e -> zoom(1.2));
@@ -79,6 +118,7 @@ public class GraphPanel extends JPanel {
         panDownButton.addActionListener(e -> pan(0, -1));
         panLeftButton.addActionListener(e -> pan(-1, 0));
         panRightButton.addActionListener(e -> pan(1, 0));
+        undoButton.addActionListener(e -> undoLastSegment());
         
         // Add buttons to panel
         controlPanel.add(new JLabel("Zoom:"));
@@ -89,6 +129,8 @@ public class GraphPanel extends JPanel {
         controlPanel.add(panDownButton);
         controlPanel.add(panLeftButton);
         controlPanel.add(panRightButton);
+        controlPanel.add(new JLabel("Drawing:"));
+        controlPanel.add(undoButton);
         
         // Add control panel to the top of the graph panel
         add(controlPanel, BorderLayout.NORTH);
@@ -277,6 +319,28 @@ public class GraphPanel extends JPanel {
         int xZero = (int) ((0 - xMin) / (xMax - xMin) * width);
         g2.drawLine(xZero, 0, xZero, height);
 
+        // Draw user's drawing (either current drawing or submitted drawing)
+        if (!userDrawnPoints.isEmpty()) {
+            g2.setColor(Color.RED);
+            g2.setStroke(new BasicStroke(2));
+            for (int i = 1; i < userDrawnPoints.size(); i++) {
+                Point p1 = userDrawnPoints.get(i - 1);
+                Point p2 = userDrawnPoints.get(i);
+                g2.drawLine(p1.x, p1.y, p2.x, p2.y);
+            }
+        } else if (drawingMode) {
+            g2.setColor(Color.RED);
+            g2.setStroke(new BasicStroke(2));
+            // Draw all line segments
+            for (List<Point> segment : lineSegments) {
+                for (int i = 1; i < segment.size(); i++) {
+                    Point p1 = segment.get(i - 1);
+                    Point p2 = segment.get(i);
+                    g2.drawLine(p1.x, p1.y, p2.x, p2.y);
+                }
+            }
+        }
+
         // Draw function last so it appears on top
         if (drawFunction) {
             drawFunction(g2);
@@ -344,5 +408,112 @@ public class GraphPanel extends JPanel {
         
         // Default to a reasonable step size
         return range / 10;
+    }
+
+    /**
+     * Sets whether the panel is in drawing mode
+     */
+    public void setDrawingMode(boolean mode) {
+        this.drawingMode = mode;
+        if (!mode) {
+            lineSegments.clear();
+            currentSegment.clear();
+        }
+        repaint();
+    }
+
+    /**
+     * Undoes the last line segment drawn
+     */
+    public void undoLastSegment() {
+        if (!lineSegments.isEmpty()) {
+            lineSegments.remove(lineSegments.size() - 1);
+            if (!currentSegment.isEmpty()) {
+                currentSegment.clear();
+            }
+            repaint();
+        }
+    }
+
+    /**
+     * Gets all drawn points from all line segments
+     */
+    public List<Point> getDrawnPoints() {
+        List<Point> allPoints = new ArrayList<>();
+        for (List<Point> segment : lineSegments) {
+            allPoints.addAll(segment);
+        }
+        return allPoints;
+    }
+
+    /**
+     * Enables or disables the zoom and pan controls
+     */
+    public void setControlsEnabled(boolean enabled) {
+        this.controlsEnabled = enabled;
+        Component[] controls = ((JPanel)getComponent(0)).getComponents();
+        for (Component c : controls) {
+            if (c instanceof JButton) {
+                c.setEnabled(enabled);
+            }
+        }
+    }
+
+    /**
+     * Converts a screen x-coordinate to a mathematical x-coordinate
+     */
+    public double screenToX(int screenX) {
+        return xMin + (screenX * (xMax - xMin)) / getWidth();
+    }
+
+    /**
+     * Converts a screen y-coordinate to a mathematical y-coordinate
+     */
+    public double screenToY(int screenY) {
+        return yMax - (screenY * (yMax - yMin)) / getHeight();
+    }
+
+    /**
+     * Gets the maximum x value of the viewing window
+     */
+    public double getXMax() {
+        return xMax;
+    }
+
+    /**
+     * Gets the minimum x value of the viewing window
+     */
+    public double getXMin() {
+        return xMin;
+    }
+
+    /**
+     * Gets the maximum y value of the viewing window
+     */
+    public double getYMax() {
+        return yMax;
+    }
+
+    /**
+     * Gets the minimum y value of the viewing window
+     */
+    public double getYMin() {
+        return yMin;
+    }
+
+    /**
+     * Sets the user's drawn points to be displayed permanently
+     */
+    public void setUserDrawnPoints(List<Point> points) {
+        this.userDrawnPoints = new ArrayList<>(points);
+        repaint();
+    }
+
+    /**
+     * Sets a new function to be plotted
+     */
+    public void setFunction(Function newFunction) {
+        this.function = newFunction;
+        repaint();
     }
 }
