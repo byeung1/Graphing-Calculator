@@ -51,7 +51,7 @@ public class GuessTheFunction extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // Center panel with graph
-        GraphPanel graphPanel = new GraphPanel(correctFunction);
+        GraphPanel graphPanel = new GraphPanel(correctFunction, true);
         add(graphPanel, BorderLayout.CENTER);
 
         // Bottom panel with multiple choice buttons
