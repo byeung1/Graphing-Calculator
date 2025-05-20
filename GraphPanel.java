@@ -145,6 +145,6 @@ public class GraphPanel extends JPanel {
                 Point p2 = userDrawnPoints.get(i + 1);
                 g2.draw(new Line2D.Double(p1.x, p1.y, p2.x, p2.y));
             }
-        }
+         }
     }
 }
