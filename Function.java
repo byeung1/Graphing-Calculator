@@ -74,11 +74,21 @@ public class Function {
 
     /**
      * Evaluate the function at a given x value
-     * @param x
-     * @return
+     * @param x the x value to evaluate at
+     * @return the y value, or Double.NaN if the evaluation fails
      */
     public double evaluate(double x) {
-        return expression.setVariable("x", x).evaluate();
+        try {
+            double result = expression.setVariable("x", x).evaluate();
+            // Check for invalid results
+            if (Double.isNaN(result) || Double.isInfinite(result)) {
+                return Double.NaN;
+            }
+            return result;
+        } catch (ArithmeticException e) {
+            // Return NaN for any arithmetic errors (like division by zero)
+            return Double.NaN;
+        }
     }
 
     /**

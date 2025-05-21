@@ -10,18 +10,31 @@ import java.util.List;
 public class DrawTheFunction extends JPanel {
     private JLabel functionLabel;
     private JLabel accuracyLabel;
+    private JLabel scoreLabel;
     private Function currentFunction;
     private GraphPanel graphPanel;
     private boolean isDrawingMode = true;
     private List<Point> userDrawnPoints = new ArrayList<>();
+    private int totalQuestions = 0;
+    private double totalAccuracy = 0.0;
     
     public DrawTheFunction(Runnable onBack) {
         // Setting the layout for the panel
         setLayout(new BorderLayout());
 
-        // Creating a label with a welcome message
+        // Create top panel with title and score
+        JPanel topPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Welcome to Draw The Function", SwingConstants.CENTER);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
+        
+        // Create score label
+        scoreLabel = new JLabel("Questions: 0 | Average Accuracy: 0%", SwingConstants.RIGHT);
+        scoreLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        scoreLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        topPanel.add(titleLabel, BorderLayout.CENTER);
+        topPanel.add(scoreLabel, BorderLayout.EAST);
+        add(topPanel, BorderLayout.NORTH);
 
         // Create a panel for the function display
         JPanel functionPanel = new JPanel(new BorderLayout());
@@ -54,9 +67,7 @@ public class DrawTheFunction extends JPanel {
         
         // Create a panel to hold both the graph and function info
         JPanel centerPanel = new JPanel(new BorderLayout());
-        
-        // Add components to main panel
-        add(titleLabel, BorderLayout.NORTH);
+        centerPanel.add(functionPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         
@@ -102,6 +113,14 @@ public class DrawTheFunction extends JPanel {
             userDrawnPoints = graphPanel.getDrawnPoints();
             double accuracy = calculateAccuracy();
             accuracyLabel.setText(String.format("Accuracy: %.1f%%", accuracy));
+            
+            // Update score tracking
+            totalQuestions++;
+            totalAccuracy += accuracy;
+            double averageAccuracy = totalAccuracy / totalQuestions;
+            scoreLabel.setText(String.format("Questions: %d | Average Accuracy: %.1f%%", 
+                totalQuestions, averageAccuracy));
+            
             graphPanel.setDrawingMode(false);
             graphPanel.setDrawFunction(true);
             graphPanel.setUserDrawnPoints(userDrawnPoints);

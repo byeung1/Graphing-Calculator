@@ -252,7 +252,21 @@ public class GraphPanel extends JPanel {
             double x = xMin + i * (xMax - xMin) / numPoints;
             double y = function.evaluate(x);
             
-            if (!Double.isNaN(y) && !Double.isInfinite(y) && y >= yMin && y <= yMax) {
+            // Skip invalid points
+            if (Double.isNaN(y) || Double.isInfinite(y)) {
+                // End current segment if we hit an invalid point
+                if (pointCount > 1) {
+                    g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
+                                  Arrays.copyOf(yPoints, pointCount), 
+                                  pointCount);
+                }
+                pointCount = 0;
+                prevY = Double.NaN;
+                continue;
+            }
+            
+            // Only draw points within the visible range
+            if (y >= yMin && y <= yMax) {
                 int screenX = i;
                 int screenY = (int) ((yMax - y) / (yMax - yMin) * height);
                 

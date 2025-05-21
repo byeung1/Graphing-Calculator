@@ -10,10 +10,19 @@ public class GuessTheFunction extends JPanel {
     private Function correctFunction;
     private final Runnable onBack;
     private final Random random = new Random();
+    private int totalQuestions = 0;
+    private int correctAnswers = 0;
+    private JLabel scoreLabel;
 
     public GuessTheFunction(Runnable onBack) {
         this.onBack = onBack;
         setLayout(new BorderLayout());
+        
+        // Create score label
+        scoreLabel = new JLabel("Score: 0/0", SwingConstants.RIGHT);
+        scoreLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        scoreLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
         setupRound();
     }
 
@@ -43,11 +52,12 @@ public class GuessTheFunction extends JPanel {
         // Shuffle choices
         Collections.shuffle(choices);
 
-        // Top panel with back button
+        // Top panel with back button and score
+        JPanel topPanel = new JPanel(new BorderLayout());
         JButton backButton = new JButton("← Back to Home");
         backButton.addActionListener(e -> onBack.run());
-        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(backButton);
+        topPanel.add(backButton, BorderLayout.WEST);
+        topPanel.add(scoreLabel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
         // Center panel with graph
@@ -73,6 +83,11 @@ public class GuessTheFunction extends JPanel {
 
     private void handleAnswer(String selected) {
         boolean isCorrect = selected.equals(correctFunction.getExpressionString());
+        totalQuestions++;
+        if (isCorrect) {
+            correctAnswers++;
+        }
+        scoreLabel.setText(String.format("Score: %d/%d", correctAnswers, totalQuestions));
 
         String message = isCorrect
                 ? "Correct!"
