@@ -110,6 +110,7 @@ public class GraphPanel extends JPanel {
         
         // Undo button
         JButton undoButton = new JButton("Undo");
+        undoButton.setName("undoButton"); // Add a name to find it later
         
         // Add action listeners
         zoomInButton.addActionListener(e -> zoom(0.8));
@@ -225,7 +226,7 @@ public class GraphPanel extends JPanel {
      */
     public void setDrawFunction(boolean shouldDraw) {
         this.drawFunction = shouldDraw;
-        repaint(); // Repaint to reflect change
+        repaint(); // Repaint to reflect change, this will preserve the current viewport
     }
 
     /**
@@ -371,6 +372,15 @@ public class GraphPanel extends JPanel {
         double xStep = calculateStepSize(xMax - xMin);
         double yStep = calculateStepSize(yMax - yMin);
         
+        // Get y-zero position for drawing x-axis labels
+        int yZeroPos = (int) ((yMax) / (yMax - yMin) * height);
+        int labelYPos = height - 5; // Default position at bottom
+        
+        // If zero is visible, draw labels just below the x-axis
+        if (yZeroPos >= 0 && yZeroPos <= height) {
+            labelYPos = yZeroPos + 15;
+        }
+        
         // Draw vertical grid lines
         for (double x = Math.ceil(xMin / xStep) * xStep; x <= xMax; x += xStep) {
             int screenX = (int) ((x - xMin) / (xMax - xMin) * width);
@@ -383,9 +393,18 @@ public class GraphPanel extends JPanel {
                 String label = String.format("%.1f", x);
                 FontMetrics fm = g2.getFontMetrics();
                 int labelWidth = fm.stringWidth(label);
-                g2.drawString(label, screenX - labelWidth/2, height - 5);
+                g2.drawString(label, screenX - labelWidth/2, labelYPos);
                 g2.setColor(new Color(240, 240, 240));
             }
+        }
+        
+        // Get x-zero position for drawing y-axis labels
+        int xZeroPos = (int) ((0 - xMin) / (xMax - xMin) * width);
+        int labelXPos = 5; // Default position at left
+        
+        // If zero is visible, draw labels just to the left of the y-axis
+        if (xZeroPos >= 0 && xZeroPos <= width) {
+            labelXPos = xZeroPos + 5;
         }
         
         // Draw horizontal grid lines
@@ -400,9 +419,16 @@ public class GraphPanel extends JPanel {
                 String label = String.format("%.1f", y);
                 FontMetrics fm = g2.getFontMetrics();
                 int labelWidth = fm.stringWidth(label);
-                g2.drawString(label, 5, screenY + fm.getAscent()/2);
+                g2.drawString(label, labelXPos, screenY + fm.getAscent()/2);
                 g2.setColor(new Color(240, 240, 240));
             }
+        }
+        
+        // Draw origin label (0,0) if visible
+        if (xZeroPos >= 0 && xZeroPos <= width && yZeroPos >= 0 && yZeroPos <= height) {
+            g2.setColor(Color.BLACK);
+            g2.setFont(new Font("Arial", Font.BOLD, 10));
+            g2.drawString("0", xZeroPos + 5, yZeroPos + 15);
         }
     }
     
@@ -430,10 +456,11 @@ public class GraphPanel extends JPanel {
     public void setDrawingMode(boolean mode) {
         this.drawingMode = mode;
         if (!mode) {
-            lineSegments.clear();
+            // Don't clear drawn segments when turning off drawing mode
+            // This preserves the user's drawing when showing the function
             currentSegment.clear();
         }
-        repaint();
+        // No need to call repaint() here as it will be called when setDrawFunction is called
     }
 
     /**
@@ -520,6 +547,8 @@ public class GraphPanel extends JPanel {
      */
     public void setUserDrawnPoints(List<Point> points) {
         this.userDrawnPoints = new ArrayList<>(points);
+        // No need to clear lineSegments here, as they should be preserved
+        // for accurate representation of what the user drew
         repaint();
     }
 
@@ -529,5 +558,20 @@ public class GraphPanel extends JPanel {
     public void setFunction(Function newFunction) {
         this.function = newFunction;
         repaint();
+    }
+
+    /**
+     * Hides the undo button for modes where it's not needed
+     */
+    public void hideUndoButton() {
+        JPanel controlPanel = (JPanel) getComponent(0);
+        for (Component component : controlPanel.getComponents()) {
+            if (component instanceof JButton && "undoButton".equals(component.getName())) {
+                component.setVisible(false);
+            }
+            if (component instanceof JLabel && "Drawing:".equals(((JLabel)component).getText())) {
+                component.setVisible(false);
+            }
+        }
     }
 }

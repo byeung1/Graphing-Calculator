@@ -40,8 +40,13 @@ public class DrawTheFunction extends JPanel {
         JPanel functionPanel = new JPanel(new BorderLayout());
         functionLabel = new JLabel("Click 'Generate Function' to see a random function", SwingConstants.CENTER);
         functionLabel.setFont(new Font("Monospaced", Font.PLAIN, 16));
+        
+        // Set a consistent size for the accuracy label to prevent layout shifts
         accuracyLabel = new JLabel("", SwingConstants.CENTER);
         accuracyLabel.setFont(new Font("Monospaced", Font.PLAIN, 16));
+        accuracyLabel.setPreferredSize(new Dimension(400, 30)); // Fixed height
+        accuracyLabel.setMinimumSize(new Dimension(400, 30));
+        
         functionPanel.add(functionLabel, BorderLayout.NORTH);
         functionPanel.add(accuracyLabel, BorderLayout.SOUTH);
         
@@ -54,10 +59,22 @@ public class DrawTheFunction extends JPanel {
         
         // Create confirm button
         JButton confirmButton = new JButton("Confirm Drawing");
+        // Style the confirm button to be green
+        confirmButton.setBackground(new Color(34, 139, 34)); // Forest green
+        confirmButton.setForeground(Color.WHITE);
+        confirmButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        confirmButton.setOpaque(true);
+        confirmButton.setBorderPainted(false);
         confirmButton.addActionListener(e -> confirmDrawing());
         
         // Create back button
         JButton backButton = new JButton("← Back to Home");
+        // Style the back button to be dark red
+        backButton.setBackground(new Color(139, 0, 0));
+        backButton.setForeground(Color.WHITE);
+        backButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        backButton.setOpaque(true);
+        backButton.setBorderPainted(false);
         backButton.addActionListener(e -> onBack.run());
         
         // Add buttons to panel
@@ -81,7 +98,8 @@ public class DrawTheFunction extends JPanel {
     private void generateNewFunction() {
         currentFunction = new Function();
         functionLabel.setText("f(x) = " + currentFunction.getExpressionString());
-        accuracyLabel.setText("");
+        // Use a non-breaking space to maintain consistent height
+        accuracyLabel.setText("\u00A0"); // Unicode non-breaking space
         userDrawnPoints.clear();
         isDrawingMode = true;
         
@@ -121,11 +139,17 @@ public class DrawTheFunction extends JPanel {
             scoreLabel.setText(String.format("Questions: %d | Average Accuracy: %.1f%%", 
                 totalQuestions, averageAccuracy));
             
+            // Important: First set the user's drawn points before changing other modes
+            // This ensures the drawn points are preserved with their original coordinates
+            graphPanel.setUserDrawnPoints(userDrawnPoints);
+            
+            // Then change the mode and show the function
             graphPanel.setDrawingMode(false);
             graphPanel.setDrawFunction(true);
-            graphPanel.setUserDrawnPoints(userDrawnPoints);
             graphPanel.setControlsEnabled(false);
-            repaint();
+            
+            // No need to call repaint explicitly, the above methods will handle it
+            // in a way that preserves the coordinate system
         }
     }
     

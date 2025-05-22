@@ -20,7 +20,7 @@ public class HomeScreen extends JPanel {
     public static void createHomeScreen() {
 
         //intializes and declares JFrame
-        frame = new JFrame("Home");
+        frame = new JFrame("Function Bee");
 
         //terminate the program when JFrame is closed
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -78,6 +78,11 @@ public class HomeScreen extends JPanel {
         mode1Button.setAlignmentX(Component.CENTER_ALIGNMENT);
         mode1Button.setMaximumSize(new Dimension(250, 40));
         mode1Button.setFocusPainted(false);
+        mode1Button.setOpaque(true);
+        mode1Button.setBorderPainted(false);
+        mode1Button.setBackground(new Color(0, 0, 128)); // Dark navy blue
+        mode1Button.setForeground(Color.WHITE);
+        mode1Button.setFont(new Font("SansSerif", Font.BOLD, 14));
         //switch to the "Mode1" when clicked
         mode1Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode1"));
 
@@ -89,6 +94,11 @@ public class HomeScreen extends JPanel {
         mode2Button.setAlignmentX(Component.CENTER_ALIGNMENT);
         mode2Button.setMaximumSize(new Dimension(250, 40));
         mode2Button.setFocusPainted(false);
+        mode2Button.setOpaque(true);
+        mode2Button.setBorderPainted(false);
+        mode2Button.setBackground(new Color(139, 0, 0)); // Dark red (dark crimson)
+        mode2Button.setForeground(Color.WHITE);
+        mode2Button.setFont(new Font("SansSerif", Font.BOLD, 14));
         //switch to the "Mode2" when clicked
         mode2Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode2"));
 

@@ -55,13 +55,22 @@ public class GuessTheFunction extends JPanel {
         // Top panel with back button and score
         JPanel topPanel = new JPanel(new BorderLayout());
         JButton backButton = new JButton("← Back to Home");
+        // Style the back button to be dark red
+        backButton.setBackground(new Color(139, 0, 0));
+        backButton.setForeground(Color.WHITE);
+        backButton.setFont(new Font("SansSerif", Font.BOLD, 14));
+        backButton.setOpaque(true);
+        backButton.setBorderPainted(false);
         backButton.addActionListener(e -> onBack.run());
+        
         topPanel.add(backButton, BorderLayout.WEST);
         topPanel.add(scoreLabel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
         // Center panel with graph
         GraphPanel graphPanel = new GraphPanel(correctFunction, true);
+        // Hide the undo button in the control panel
+        graphPanel.hideUndoButton();
         add(graphPanel, BorderLayout.CENTER);
 
         // Bottom panel with multiple choice buttons
