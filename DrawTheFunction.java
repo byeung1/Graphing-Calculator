@@ -164,7 +164,7 @@ public class DrawTheFunction extends JPanel {
         double totalError = 0;
         int validPoints = 0;
         
-        // Sample points along the x-axis to check for missing y-values
+        // Sample points along the x-axis to check for entire function coverage
         int numSamples = 100; // Number of points to sample
         double xStep = (graphPanel.getXMax() - graphPanel.getXMin()) / numSamples;
         
@@ -180,22 +180,34 @@ public class DrawTheFunction extends JPanel {
                     continue;
                 }
                 
-                // Find the closest point in the user's drawing for this x value
-                double drawnY = 0; // Default to y=0 if no point found
-                double minXDiff = Double.MAX_VALUE;
+                // Find the closest drawn point to this x-coordinate
+                double closestDistance = Double.MAX_VALUE;
+                double drawnY = actualY; // Default to maximum error (will be replaced if point found)
+                boolean pointFound = false;
                 
                 for (Point p : userDrawnPoints) {
                     double drawnX = graphPanel.screenToX(p.x);
-                    double xDiff = Math.abs(drawnX - x);
+                    double distance = Math.abs(drawnX - x);
                     
-                    if (xDiff < minXDiff) {
-                        minXDiff = xDiff;
+                    // Consider points within a certain range (1% of the x-axis width)
+                    double threshold = (graphPanel.getXMax() - graphPanel.getXMin()) * 0.01; 
+                    
+                    if (distance < closestDistance && distance < threshold) {
+                        closestDistance = distance;
                         drawnY = graphPanel.screenToY(p.y);
+                        pointFound = true;
                     }
                 }
                 
-                // Calculate error for this point
-                double error = Math.abs(actualY - drawnY);
+                // If no point was drawn near this x-coordinate, use maximum error
+                double error;
+                if (pointFound) {
+                    error = Math.abs(actualY - drawnY);
+                } else {
+                    // Penalize missing sections with maximum error (equal to 25% of y-range)
+                    error = (graphPanel.getYMax() - graphPanel.getYMin()) * 0.25;
+                }
+                
                 totalError += error;
                 validPoints++;
                 
@@ -208,7 +220,8 @@ public class DrawTheFunction extends JPanel {
         if (validPoints == 0) return 0.0;
         
         double averageError = totalError / validPoints;
-        double maxError = (graphPanel.getYMax() - graphPanel.getYMin()) * 0.5; // 50% of the y-range
+        // Strict scoring with 25% y-range as maximum error
+        double maxError = (graphPanel.getYMax() - graphPanel.getYMin()) * 0.25;
         double accuracy = Math.max(0, 100 * (1 - averageError / maxError));
         
         return accuracy;
