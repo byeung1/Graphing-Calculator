@@ -68,7 +68,7 @@ public class GuessTheFunction extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         // Center panel with graph
-        GraphPanel graphPanel = new GraphPanel(correctFunction, true);
+        FunctionGraphPanel graphPanel = new FunctionGraphPanel(correctFunction, true);
         // Hide the undo button in the control panel
         graphPanel.hideUndoButton();
         add(graphPanel, BorderLayout.CENTER);
@@ -98,9 +98,7 @@ public class GuessTheFunction extends JPanel {
         }
         scoreLabel.setText(String.format("Score: %d/%d", correctAnswers, totalQuestions));
 
-        String message = isCorrect
-                ? "Correct!"
-                : "Incorrect. The correct answer was: " + correctFunction.getExpressionString();
+        String message = isCorrect ? "Correct!" : "Incorrect. The correct answer was: " + correctFunction.getExpressionString();
 
         int result = JOptionPane.showOptionDialog(
                 this,
