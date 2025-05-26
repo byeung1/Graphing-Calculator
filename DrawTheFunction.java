@@ -176,8 +176,8 @@ public class DrawTheFunction extends JPanel {
                     continue;
                 }
                 
-                // Find the closest drawn point to this x-coordinate
-                double closestDistance = Double.MAX_VALUE;
+                // Find the farthest drawn point to this x-coordinate (to penalize multiple y-values)
+                double farthestDistance = -1;
                 double drawnY = actualY; // Default to maximum error (will be replaced if point found)
                 boolean pointFound = false;
                 
@@ -188,10 +188,16 @@ public class DrawTheFunction extends JPanel {
                     // Consider points within a certain range (1% of the x-axis width)
                     double threshold = (graphPanel.getXMax() - graphPanel.getXMin()) * 0.01; 
                     
-                    if (distance < closestDistance && distance < threshold) {
-                        closestDistance = distance;
-                        drawnY = graphPanel.screenToY(p.y);
-                        pointFound = true;
+                    if (distance < threshold) {
+                        double candidateDrawnY = graphPanel.screenToY(p.y);
+                        double yError = Math.abs(actualY - candidateDrawnY);
+                        
+                        // Select the point with the largest error (farthest from actual)
+                        if (farthestDistance < 0 || yError > farthestDistance) {
+                            farthestDistance = yError;
+                            drawnY = candidateDrawnY;
+                            pointFound = true;
+                        }
                     }
                 }
                 
