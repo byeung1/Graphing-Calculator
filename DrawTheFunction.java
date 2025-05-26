@@ -8,7 +8,7 @@ public class DrawTheFunction extends JPanel {
     private JLabel accuracyLabel;
     private JLabel scoreLabel;
     private Function currentFunction;
-    private GraphPanel graphPanel;
+    private FunctionGraphPanel graphPanel;
     private boolean isDrawingMode = true;
     private List<Point> userDrawnPoints = new ArrayList<>();
     private int totalQuestions = 0;
@@ -103,7 +103,7 @@ public class DrawTheFunction extends JPanel {
             remove(graphPanel);
         }
         
-        graphPanel = new GraphPanel(currentFunction, false);
+        graphPanel = new FunctionGraphPanel(currentFunction, false);
         graphPanel.setDrawingMode(true);
         graphPanel.setControlsEnabled(true);
         

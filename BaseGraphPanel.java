@@ -4,46 +4,37 @@ import java.awt.geom.Line2D;
 import java.awt.event.*;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * GraphPanel is a custom JPanel that can optionally draw a mathematical function.
+ * BaseGraphPanel is a custom JPanel that provides basic graphing functionality.
  */
-public class GraphPanel extends JPanel {
-
-    private Function function;     // The function to be plotted
-    private boolean drawFunction = false; // Whether the function should be drawn
-    private boolean drawingMode = false;  // Whether we're in drawing mode
-    private List<List<Point>> lineSegments = new ArrayList<>(); // List of line segments
-    private List<Point> currentSegment = new ArrayList<>(); // Current line segment being drawn
-    private List<Point> userDrawnPoints = new ArrayList<>(); // Points to keep visible after submission
-    private boolean controlsEnabled = true; // Whether zoom/pan controls are enabled
+public class BaseGraphPanel extends JPanel {
+    protected List<List<Point>> lineSegments = new ArrayList<>(); // List of line segments
+    protected List<Point> currentSegment = new ArrayList<>(); // Current line segment being drawn
+    protected List<Point> userDrawnPoints = new ArrayList<>(); // Points to keep visible after submission
+    protected boolean drawingMode = false;  // Whether we're in drawing mode
+    protected boolean controlsEnabled = true; // Whether zoom/pan controls are enabled
     
     // Window bounds
-    private double xMin = -10;
-    private double xMax = 10;
-    private double yMin = -10;
-    private double yMax = 10;
+    protected double xMin = -10;
+    protected double xMax = 10;
+    protected double yMin = -10;
+    protected double yMax = 10;
     
     // Scale factors
-    private double xScale = 50;
-    private double yScale = 50;
+    protected double xScale = 50;
+    protected double yScale = 50;
     
     // Labels for axes
-    private JLabel xAxisLabel;
-    private JLabel yAxisLabel;
+    protected JLabel xAxisLabel;
+    protected JLabel yAxisLabel;
 
     /**
-     * Constructor that initializes the panel and optionally enables drawing.
-     * 
-     * @param function The function to graph
-     * @param shouldDraw Whether the function should be drawn immediately
+     * Constructor that initializes the panel.
      */
-    public GraphPanel(Function function, boolean shouldDraw) {
-        this.function = function;
+    public BaseGraphPanel() {
         setupPanel();            // Set size, background, etc.
-        setDrawFunction(shouldDraw); // Explicitly decide if we start with drawing
         
         // Create control panel with buttons
         createControlPanel();
@@ -85,7 +76,7 @@ public class GraphPanel extends JPanel {
     /**
      * Sets up panel settings like size and background.
      */
-    private void setupPanel() {
+    protected void setupPanel() {
         setPreferredSize(new Dimension(800, 600));
         setBackground(Color.WHITE);
         setLayout(new BorderLayout());
@@ -94,7 +85,7 @@ public class GraphPanel extends JPanel {
     /**
      * Creates the control panel with zoom and pan buttons.
      */
-    private void createControlPanel() {
+    protected void createControlPanel() {
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         
@@ -140,7 +131,7 @@ public class GraphPanel extends JPanel {
     /**
      * Creates the axis labels that will be updated dynamically.
      */
-    private void createAxisLabels() {
+    protected void createAxisLabels() {
         JPanel labelPanel = new JPanel(new BorderLayout());
         
         // Create axis labels
@@ -163,7 +154,7 @@ public class GraphPanel extends JPanel {
     /**
      * Formats a range for display in the axis labels.
      */
-    private String formatRange(double min, double max) {
+    protected String formatRange(double min, double max) {
         DecimalFormat df = new DecimalFormat("#.##");
         return "[" + df.format(min) + ", " + df.format(max) + "]";
     }
@@ -171,17 +162,15 @@ public class GraphPanel extends JPanel {
     /**
      * Updates the axis labels with current window bounds.
      */
-    private void updateAxisLabels() {
+    protected void updateAxisLabels() {
         xAxisLabel.setText("X: " + formatRange(xMin, xMax));
         yAxisLabel.setText("Y: " + formatRange(yMin, yMax));
     }
     
     /**
      * Zooms the graph by the given factor.
-     * 
-     * @param factor Zoom factor (less than 1 to zoom in, greater than 1 to zoom out)
      */
-    private void zoom(double factor) {
+    protected void zoom(double factor) {
         double xCenter = (xMin + xMax) / 2;
         double yCenter = (yMin + yMax) / 2;
         
@@ -199,11 +188,8 @@ public class GraphPanel extends JPanel {
     
     /**
      * Pans the graph in the specified direction.
-     * 
-     * @param xDirection Horizontal direction (-1 for left, 1 for right, 0 for none)
-     * @param yDirection Vertical direction (-1 for down, 1 for up, 0 for none)
      */
-    private void pan(int xDirection, int yDirection) {
+    protected void pan(int xDirection, int yDirection) {
         double xRange = xMax - xMin;
         double yRange = yMax - yMin;
         
@@ -220,94 +206,7 @@ public class GraphPanel extends JPanel {
     }
 
     /**
-     * Enables or disables drawing of the function and repaints.
-     * 
-     * @param shouldDraw true to draw the function, false to hide it
-     */
-    public void setDrawFunction(boolean shouldDraw) {
-        this.drawFunction = shouldDraw;
-        repaint(); // Repaint to reflect change, this will preserve the current viewport
-    }
-
-    /**
-     * Actually draws the function on the panel.
-     * 
-     * @param g2 Graphics2D context
-     */
-    private void drawFunction(Graphics2D g2) {
-        int width = getWidth();
-        int height = getHeight();
-
-        g2.setColor(Color.BLUE);
-        g2.setStroke(new BasicStroke(2));
-
-        // Calculate points for the function
-        int numPoints = width;
-        int[] xPoints = new int[numPoints];
-        int[] yPoints = new int[numPoints];
-        int pointCount = 0;
-        
-        double prevY = Double.NaN;
-        
-        for (int i = 0; i < numPoints; i++) {
-            double x = xMin + i * (xMax - xMin) / numPoints;
-            double y = function.evaluate(x);
-            
-            // Skip invalid points
-            if (Double.isNaN(y) || Double.isInfinite(y)) {
-                // End current segment if we hit an invalid point
-                if (pointCount > 1) {
-                    g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
-                                  Arrays.copyOf(yPoints, pointCount), 
-                                  pointCount);
-                }
-                pointCount = 0;
-                prevY = Double.NaN;
-                continue;
-            }
-            
-            // Only draw points within the visible range
-            if (y >= yMin && y <= yMax) {
-                int screenX = i;
-                int screenY = (int) ((yMax - y) / (yMax - yMin) * height);
-                
-                // Skip if there's a discontinuity (large jump)
-                if (!Double.isNaN(prevY) && Math.abs(y - prevY) > (yMax - yMin) / 4) {
-                    // Start a new segment
-                    if (pointCount > 1) {
-                        g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
-                                      Arrays.copyOf(yPoints, pointCount), 
-                                      pointCount);
-                    }
-                    pointCount = 0;
-                }
-                
-                xPoints[pointCount] = screenX;
-                yPoints[pointCount] = screenY;
-                pointCount++;
-                prevY = y;
-            } else {
-                // End current segment if we hit a point outside range
-                if (pointCount > 1) {
-                    g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
-                                  Arrays.copyOf(yPoints, pointCount), 
-                                  pointCount);
-                }
-                pointCount = 0;
-                prevY = Double.NaN;
-            }
-        }
-        
-        // Draw the last segment
-        if (pointCount > 1) {
-            g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
-                          Arrays.copyOf(yPoints, pointCount), 
-                          pointCount);
-        }
-    }
-
-    /**
-     * Main paint method that handles drawing axes and optionally the function.
+     * Main paint method that handles drawing axes and grid.
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -355,17 +254,12 @@ public class GraphPanel extends JPanel {
                 }
             }
         }
-
-        // Draw function last so it appears on top
-        if (drawFunction) {
-            drawFunction(g2);
-        }
     }
     
     /**
      * Draws the grid lines on the graph.
      */
-    private void drawGrid(Graphics2D g2, int width, int height) {
+    protected void drawGrid(Graphics2D g2, int width, int height) {
         g2.setColor(new Color(240, 240, 240));
         
         // Calculate step size based on current zoom level
@@ -435,7 +329,7 @@ public class GraphPanel extends JPanel {
     /**
      * Calculates an appropriate step size for grid lines based on the range.
      */
-    private double calculateStepSize(double range) {
+    protected double calculateStepSize(double range) {
         double[] possibleSteps = {0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0};
         
         // Find the first step size that gives between 5 and 20 grid lines
@@ -456,11 +350,8 @@ public class GraphPanel extends JPanel {
     public void setDrawingMode(boolean mode) {
         this.drawingMode = mode;
         if (!mode) {
-            // Don't clear drawn segments when turning off drawing mode
-            // This preserves the user's drawing when showing the function
             currentSegment.clear();
         }
-        // No need to call repaint() here as it will be called when setDrawFunction is called
     }
 
     /**
@@ -547,16 +438,6 @@ public class GraphPanel extends JPanel {
      */
     public void setUserDrawnPoints(List<Point> points) {
         this.userDrawnPoints = new ArrayList<>(points);
-        // No need to clear lineSegments here, as they should be preserved
-        // for accurate representation of what the user drew
-        repaint();
-    }
-
-    /**
-     * Sets a new function to be plotted
-     */
-    public void setFunction(Function newFunction) {
-        this.function = newFunction;
         repaint();
     }
 
@@ -574,4 +455,4 @@ public class GraphPanel extends JPanel {
             }
         }
     }
-}
+} 
