@@ -7,13 +7,14 @@ public class HomeScreen extends JPanel {
     private static JFrame frame;
     private static JPanel mainPanel;
     private static CardLayout cardLayout;
+    private static GuessTheFunction guessTheFunctionScreen;
 
     /**
      * Creates the home screen with two buttons to select game model
      */
     public static void createHomeScreen() {
 
-        //intializes and declares JFrame
+        //initializes and declares JFrame
         frame = new JFrame("Function Bee");
 
         //terminate the program when JFrame is closed
@@ -30,11 +31,13 @@ public class HomeScreen extends JPanel {
         mainPanel = new JPanel(cardLayout);
 
         //Initializes game mode panels with lambdas to return to home
-        JPanel mode1Screen = new GuessTheFunction(() -> cardLayout.show(mainPanel, "Home"));
+        guessTheFunctionScreen = new GuessTheFunction(() -> {
+            cardLayout.show(mainPanel, "Home");
+        });
         JPanel mode2Screen = new DrawTheFunction(() -> cardLayout.show(mainPanel, "Home"));
 
         // Add screens to the card layout
-        mainPanel.add(mode1Screen, "Mode1");
+        mainPanel.add(guessTheFunctionScreen, "Mode1");
         mainPanel.add(mode2Screen, "Mode2");
 
         // Add panel to frame
@@ -43,9 +46,7 @@ public class HomeScreen extends JPanel {
         cardLayout.show(mainPanel, "Home");
         frame.add(mainPanel);
 
-
         frame.setVisible(true);
-
     }
 
     /**
@@ -78,7 +79,10 @@ public class HomeScreen extends JPanel {
         mode1Button.setForeground(Color.WHITE);
         mode1Button.setFont(new Font("SansSerif", Font.BOLD, 14));
         //switch to the "Mode1" when clicked
-        mode1Button.addActionListener(e -> cardLayout.show(mainPanel, "Mode1"));
+        mode1Button.addActionListener(e -> {
+            guessTheFunctionScreen.setupRound();
+            cardLayout.show(mainPanel, "Mode1");
+        });
 
         // Spacer for aethetics
         panel.add(Box.createRigidArea(new Dimension(0, 10)));

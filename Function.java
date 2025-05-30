@@ -64,12 +64,12 @@ public class Function {
                 }
             }
             
-            System.out.println(expressionBuilder.toString());
             // Build the expression
             this.expression = new ExpressionBuilder(expressionBuilder.toString())
                                 .variable("x")
                                 .build();
             this.expressionString = expressionBuilder.toString();
+            System.out.println(this);
     }
 
     /**
@@ -97,5 +97,10 @@ public class Function {
      */
     public String getExpressionString() {
         return expressionString;
+    }
+
+    @Override
+    public String toString() {
+        return "f(x) = " + expressionString;
     }
 }

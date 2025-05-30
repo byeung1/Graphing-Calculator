@@ -26,7 +26,7 @@ public class GuessTheFunction extends JPanel {
         setupRound();
     }
 
-    private void setupRound() {
+    public void setupRound() {
         removeAll(); // Clear UI
 
         // Generate the correct function
