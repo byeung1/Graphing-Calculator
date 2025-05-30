@@ -7,43 +7,57 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BaseGraphPanel is a custom JPanel that provides basic graphing functionality.
+ * A base class for creating interactive graph panels with zoom, pan, and drawing features
+ * Provides a coordinate system with axes, grid lines, and labels
+ * Supports user interaction for drawing and manipulating the view
  */
 public class BaseGraphPanel extends JPanel {
-    protected List<List<Point>> lineSegments = new ArrayList<>(); // List of line segments
-    protected List<Point> currentSegment = new ArrayList<>(); // Current line segment being drawn
-    protected List<Point> userDrawnPoints = new ArrayList<>(); // Points to keep visible after submission
-    protected boolean drawingMode = false;  // Whether we're in drawing mode
-    protected boolean controlsEnabled = true; // Whether zoom/pan controls are enabled
+    // List of line segments drawn by the user for the DrawTheFunction class
+    protected List<List<Point>> lineSegments = new ArrayList<>();
     
-    // Window bounds
+    // The current line segment being drawn for the DrawTheFunction class
+    protected List<Point> currentSegment = new ArrayList<>();
+    
+    // Points that have been submitted and should remain visible even after going to the HomeScreen and returning
+    protected List<Point> userDrawnPoints = new ArrayList<>();
+    
+    // Whether the panel is currently in drawing mode, used while in the DrawTheFunction mode
+    protected boolean drawingMode = false;
+    
+    // Whether the zoom and pan controls are enabled
+    protected boolean controlsEnabled = true;
+    
+    // The visible range of the x and y-axis
     protected double xMin = -10;
     protected double xMax = 10;
     protected double yMin = -10;
     protected double yMax = 10;
     
-    // Scale factors
+    // Scale factors for converting between screen and mathematical coordinates
     protected double xScale = 50;
     protected double yScale = 50;
     
-    // Labels for axes
+    // Labels that show the current visible range of the axes, are updated when the user zooms/pans
     protected JLabel xAxisLabel;
     protected JLabel yAxisLabel;
 
     /**
-     * Constructor that initializes the panel.
+     * Creates a new BaseGraphPanel with default settings.
+     * Initializes the panel size, background, and adds mouse listeners for drawing.
+     * Creates the control panel with zoom and pan buttons.
+     * Sets up the axis labels to show the current view range.
      */
     public BaseGraphPanel() {
-        setupPanel();            // Set size, background, etc.
-        
-        // Create control panel with buttons
+        //sets up the size, background, control panel, and creates axis labels
+        setupPanel();
         createControlPanel();
-        
-        // Create axis labels
         createAxisLabels();
         
         // Add mouse listeners for drawing
         addMouseListener(new MouseAdapter() {
+            /*
+             * If the mouse is pressed, at the points to the currentSegment, which is then added to the lineSegments to track the user's inputs 
+             */
             @Override
             public void mousePressed(MouseEvent e) {
                 if (drawingMode) {
@@ -54,6 +68,9 @@ public class BaseGraphPanel extends JPanel {
                 }
             }
             
+            /*
+             * If the mouse is released, than create a new ArrayList for the next segment
+             */
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (drawingMode && !currentSegment.isEmpty()) {
@@ -63,6 +80,9 @@ public class BaseGraphPanel extends JPanel {
         });
         
         addMouseMotionListener(new MouseMotionAdapter() {
+            /*
+             * If the mouse is already being pressed, then you add the point to the currentSegment
+             */
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (drawingMode && !currentSegment.isEmpty()) {
@@ -74,7 +94,8 @@ public class BaseGraphPanel extends JPanel {
     }
 
     /**
-     * Sets up panel settings like size and background.
+     * Sets up the basic properties of the panel
+     * Configures the size, background color, and layout
      */
     protected void setupPanel() {
         setPreferredSize(new Dimension(800, 600));
@@ -83,27 +104,27 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Creates the control panel with zoom and pan buttons.
+     * Creates the control panel with zoom, pan, and undo buttons
      */
     protected void createControlPanel() {
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         
-        // Zoom buttons
+        // Create zoom buttons
         JButton zoomInButton = new JButton("+");
         JButton zoomOutButton = new JButton("-");
         
-        // Pan buttons
+        // Create pan buttons
         JButton panUpButton = new JButton("↑");
         JButton panDownButton = new JButton("↓");
         JButton panLeftButton = new JButton("←");
         JButton panRightButton = new JButton("→");
         
-        // Undo button
+        // Create undo button
         JButton undoButton = new JButton("Undo");
         undoButton.setName("undoButton"); // Add a name to find it later
         
-        // Add action listeners
+        // Add action listeners for all buttons
         zoomInButton.addActionListener(e -> zoom(0.8));
         zoomOutButton.addActionListener(e -> zoom(1.2));
         panUpButton.addActionListener(e -> pan(0, 1));
@@ -112,7 +133,7 @@ public class BaseGraphPanel extends JPanel {
         panRightButton.addActionListener(e -> pan(1, 0));
         undoButton.addActionListener(e -> undoLastSegment());
         
-        // Add buttons to panel
+        // Add buttons to panel with labels
         controlPanel.add(new JLabel("Zoom:"));
         controlPanel.add(zoomInButton);
         controlPanel.add(zoomOutButton);
@@ -129,16 +150,16 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Creates the axis labels that will be updated dynamically.
+     * Creates the axis labels that show the current visible range
+     * The labels are updated whenever the view changes
      */
     protected void createAxisLabels() {
         JPanel labelPanel = new JPanel(new BorderLayout());
         
-        // Create axis labels
+        // Create and style the axis labels
         xAxisLabel = new JLabel("X: " + formatRange(xMin, xMax));
         yAxisLabel = new JLabel("Y: " + formatRange(yMin, yMax));
         
-        // Style the labels
         Font labelFont = new Font("Arial", Font.PLAIN, 12);
         xAxisLabel.setFont(labelFont);
         yAxisLabel.setFont(labelFont);
@@ -152,7 +173,12 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Formats a range for display in the axis labels.
+     * Formats a range for display in the axis labels
+     * Rounds the numbers to two decimal places for readability
+     * 
+     * @param min The minimum value of the range
+     * @param max The maximum value of the range
+     * @return A formatted string showing the range
      */
     protected String formatRange(double min, double max) {
         DecimalFormat df = new DecimalFormat("#.##");
@@ -160,7 +186,8 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Updates the axis labels with current window bounds.
+     * Updates the axis labels with the current window bounds
+     * Called whenever the view changes (zoom or pan)
      */
     protected void updateAxisLabels() {
         xAxisLabel.setText("X: " + formatRange(xMin, xMax));
@@ -168,15 +195,21 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Zooms the graph by the given factor.
+     * Zooms the graph by the given factor
+     * The zoom is centered on the current view center
+     * 
+     * @param factor The zoom factor (less than 1 to zoom in, greater than 1 to zoom out)
      */
     protected void zoom(double factor) {
+        // Calculate the center of the current view
         double xCenter = (xMin + xMax) / 2;
         double yCenter = (yMin + yMax) / 2;
         
+        // Calculate new ranges
         double xRange = (xMax - xMin) * factor;
         double yRange = (yMax - yMin) * factor;
         
+        // Update bounds while keeping the center point
         xMin = xCenter - xRange / 2;
         xMax = xCenter + xRange / 2;
         yMin = yCenter - yRange / 2;
@@ -187,15 +220,22 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Pans the graph in the specified direction.
+     * Pans the graph in the specified direction
+     * The pan distance is proportional to the current view size
+     * 
+     * @param xDirection Horizontal direction (-1 for left, 1 for right, 0 for none)
+     * @param yDirection Vertical direction (-1 for down, 1 for up, 0 for none)
      */
     protected void pan(int xDirection, int yDirection) {
+        // Calculate the current ranges
         double xRange = xMax - xMin;
         double yRange = yMax - yMin;
         
+        // Calculate step sizes (10% of the current range)
         double xStep = xRange * 0.1;
         double yStep = yRange * 0.1;
         
+        // Update bounds
         xMin += xDirection * xStep;
         xMax += xDirection * xStep;
         yMin += yDirection * yStep;
@@ -206,7 +246,10 @@ public class BaseGraphPanel extends JPanel {
     }
 
     /**
-     * Main paint method that handles drawing axes and grid.
+     * Main paint method that handles drawing the graph
+     * Draws the grid, axes, and any user drawings
+     * 
+     * @param g The graphics context to draw with
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -218,10 +261,10 @@ public class BaseGraphPanel extends JPanel {
         int width = getWidth();
         int height = getHeight();
 
-        // Draw grid first
+        // Draw the grid first, it is behind everything else
         drawGrid(g2, width, height);
 
-        // Draw axes
+        // Draw the axes
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(2));
         
@@ -257,7 +300,12 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Draws the grid lines on the graph.
+     * Draws the grid lines and their labels
+     * The grid spacing is automatically adjusted based on the current zoom level
+     * 
+     * @param g2 The graphics context to draw with
+     * @param width The width of the panel
+     * @param height The height of the panel
      */
     protected void drawGrid(Graphics2D g2, int width, int height) {
         g2.setColor(new Color(240, 240, 240));
@@ -281,7 +329,8 @@ public class BaseGraphPanel extends JPanel {
             g2.draw(new Line2D.Double(screenX, 0, screenX, height));
             
             // Draw x-axis labels
-            if (Math.abs(x) > 0.001) { // Don't label zero
+            if (Math.abs(x) > 0.001) { 
+                // Don't label zero
                 g2.setColor(Color.BLACK);
                 g2.setFont(new Font("Arial", Font.PLAIN, 10));
                 String label = String.format("%.1f", x);
@@ -307,7 +356,8 @@ public class BaseGraphPanel extends JPanel {
             g2.draw(new Line2D.Double(0, screenY, width, screenY));
             
             // Draw y-axis labels
-            if (Math.abs(y) > 0.001) { // Don't label zero
+            if (Math.abs(y) > 0.001) { 
+                // Don't label zero
                 g2.setColor(Color.BLACK);
                 g2.setFont(new Font("Arial", Font.PLAIN, 10));
                 String label = String.format("%.1f", y);
@@ -327,7 +377,11 @@ public class BaseGraphPanel extends JPanel {
     }
     
     /**
-     * Calculates an appropriate step size for grid lines based on the range.
+     * Calculates an appropriate step size for grid lines based on the range
+     * Tries to find a step size that will result in 5-20 grid lines
+     * 
+     * @param range The total range to divide into grid lines
+     * @return The calculated step size
      */
     protected double calculateStepSize(double range) {
         double[] possibleSteps = {0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0};
@@ -345,7 +399,11 @@ public class BaseGraphPanel extends JPanel {
     }
 
     /**
+     * Public method to be used in the DrawTheFunction class
      * Sets whether the panel is in drawing mode
+     * When drawing mode is enabled, mouse events will create new line segments
+     * 
+     * @param mode Whether drawing mode should be enabled
      */
     public void setDrawingMode(boolean mode) {
         this.drawingMode = mode;
@@ -355,7 +413,8 @@ public class BaseGraphPanel extends JPanel {
     }
 
     /**
-     * Undoes the last line segment drawn
+     * Removes the last line segment drawn by the user
+     * Called when the undo button is clicked
      */
     public void undoLastSegment() {
         if (!lineSegments.isEmpty()) {
@@ -368,7 +427,9 @@ public class BaseGraphPanel extends JPanel {
     }
 
     /**
-     * Gets all drawn points from all line segments
+     * Gets all points from all line segments drawn by the user
+     * 
+     * @return A list of all points in all line segments
      */
     public List<Point> getDrawnPoints() {
         List<Point> allPoints = new ArrayList<>();
@@ -380,6 +441,10 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Enables or disables the zoom and pan controls
+     * When disabled, the control buttons will be grayed out
+     * They should be disabled after the user submits their drawing
+     * 
+     * @param enabled Whether the controls should be enabled
      */
     public void setControlsEnabled(boolean enabled) {
         this.controlsEnabled = enabled;
@@ -393,6 +458,9 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Converts a screen x-coordinate to a mathematical x-coordinate
+     * 
+     * @param screenX The x-coordinate in screen pixels
+     * @return The corresponding x value in the mathematical coordinate system
      */
     public double screenToX(int screenX) {
         return xMin + (screenX * (xMax - xMin)) / getWidth();
@@ -400,6 +468,9 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Converts a screen y-coordinate to a mathematical y-coordinate
+     * 
+     * @param screenY The y-coordinate in screen pixels
+     * @return The corresponding y value in the mathematical coordinate system
      */
     public double screenToY(int screenY) {
         return yMax - (screenY * (yMax - yMin)) / getHeight();
@@ -407,6 +478,8 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Gets the maximum x value of the viewing window
+     * 
+     * @return The maximum x value currently visible
      */
     public double getXMax() {
         return xMax;
@@ -414,6 +487,8 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Gets the minimum x value of the viewing window
+     * 
+     * @return The minimum x value currently visible
      */
     public double getXMin() {
         return xMin;
@@ -421,6 +496,8 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Gets the maximum y value of the viewing window
+     * 
+     * @return The maximum y value currently visible
      */
     public double getYMax() {
         return yMax;
@@ -428,6 +505,8 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Gets the minimum y value of the viewing window
+     * 
+     * @return The minimum y value currently visible
      */
     public double getYMin() {
         return yMin;
@@ -435,6 +514,9 @@ public class BaseGraphPanel extends JPanel {
 
     /**
      * Sets the user's drawn points to be displayed permanently
+     * This is used to preserve the user's drawing when switching modes
+     * 
+     * @param points The points to display
      */
     public void setUserDrawnPoints(List<Point> points) {
         this.userDrawnPoints = new ArrayList<>(points);
@@ -442,7 +524,8 @@ public class BaseGraphPanel extends JPanel {
     }
 
     /**
-     * Hides the undo button for modes where it's not needed
+     * Hides the undo button and its label
+     * Used in modes where drawing is not allowed (GuessTheFunction)
      */
     public void hideUndoButton() {
         JPanel controlPanel = (JPanel) getComponent(0);

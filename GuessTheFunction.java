@@ -3,22 +3,41 @@ import java.awt.*;
 import java.util.*;
 
 /**
- * GuessTheFunction panel displays a graph and four options to guess the function expression.
+ * A game mode where players try to identify a mathematical function from its graph.
+ * The game displays a function's graph and provides four possible expressions to choose from.
+ * Players can track their score as they play multiple rounds, and can return to the home
+ * screen at any time.
  */
 public class GuessTheFunction extends JPanel {
-
+    // The function that the player is trying to guess
     private Function correctFunction;
+    
+    // Callback function to return to the home screen
     private final Runnable onBack;
+    
+    // Random number generator for creating new functions
     private final Random random = new Random();
+    
+    // Total number of questions attempted
     private int totalQuestions = 0;
+    
+    // Number of correct answers given
     private int correctAnswers = 0;
+    
+    // Label displaying the current score
     private JLabel scoreLabel;
 
+    /**
+     * Creates a new GuessTheFunction game panel
+     * Sets up the UI with a score display and prepares for the first round
+     * 
+     * @param onBack Callback function to return to the home screen
+     */
     public GuessTheFunction(Runnable onBack) {
         this.onBack = onBack;
         setLayout(new BorderLayout());
         
-        // Create score label
+        // Create the score label
         scoreLabel = new JLabel("Score: 0/0", SwingConstants.RIGHT);
         scoreLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         scoreLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -26,14 +45,20 @@ public class GuessTheFunction extends JPanel {
         setupRound();
     }
 
+    /**
+     * Sets up a new round of the game
+     * Generates a new function and creates four possible answers
+     * Updates the UI to show the function's graph and answer choices
+     */
     public void setupRound() {
-        removeAll(); // Clear UI
+        // Clear UI
+        removeAll(); 
 
         // Generate the correct function
         correctFunction = new Function();
         String correctExpr = correctFunction.getExpressionString();
 
-        // Use a Set to guarantee unique expressions
+        // Use a Set to ensure unique expressions
         Set<String> expressionSet = new HashSet<>();
         expressionSet.add(correctExpr);
 
@@ -49,13 +74,12 @@ public class GuessTheFunction extends JPanel {
             }
         }
 
-        // Shuffle choices
+        // Shuffle the answer choices
         Collections.shuffle(choices);
 
-        // Top panel with back button and score
+        // Create and configure the top panel with back button and score
         JPanel topPanel = new JPanel(new BorderLayout());
         JButton backButton = new JButton("← Back to Home");
-        // Style the back button to be dark red
         backButton.setBackground(new Color(139, 0, 0));
         backButton.setForeground(Color.WHITE);
         backButton.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -67,13 +91,12 @@ public class GuessTheFunction extends JPanel {
         topPanel.add(scoreLabel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
-        // Center panel with graph
+        // Create and configure the graph panel
         FunctionGraphPanel graphPanel = new FunctionGraphPanel(correctFunction, true);
-        // Hide the undo button in the control panel
         graphPanel.hideUndoButton();
         add(graphPanel, BorderLayout.CENTER);
 
-        // Bottom panel with multiple choice buttons
+        // Create and configure the answer choice buttons
         JPanel choicesPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         for (String option : choices) {
             JButton optionButton = new JButton(option);
@@ -81,6 +104,7 @@ public class GuessTheFunction extends JPanel {
             choicesPanel.add(optionButton);
         }
 
+        // Add padding around the choices panel
         JPanel bottomWrapper = new JPanel(new BorderLayout());
         bottomWrapper.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
         bottomWrapper.add(choicesPanel, BorderLayout.CENTER);
@@ -90,7 +114,15 @@ public class GuessTheFunction extends JPanel {
         repaint();
     }
 
+    /**
+     * Handles the player's answer selection
+     * Updates the score and shows a dialog with the result
+     * Gi
+     * 
+     * @param selected The expression that the player selected
+     */
     private void handleAnswer(String selected) {
+        // Check if the answer is correct and update score
         boolean isCorrect = selected.equals(correctFunction.getExpressionString());
         totalQuestions++;
         if (isCorrect) {
@@ -98,6 +130,7 @@ public class GuessTheFunction extends JPanel {
         }
         scoreLabel.setText(String.format("Score: %d/%d", correctAnswers, totalQuestions));
 
+        // Show result dialog
         String message = isCorrect ? "Correct!" : "Incorrect. The correct answer was: " + correctFunction.getExpressionString();
 
         int result = JOptionPane.showOptionDialog(
@@ -111,6 +144,7 @@ public class GuessTheFunction extends JPanel {
                 "Next"
         );
 
+        // Handle player's choice
         if (result == JOptionPane.YES_OPTION) {
             setupRound();
         } else {

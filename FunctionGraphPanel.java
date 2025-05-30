@@ -3,16 +3,21 @@ import java.awt.*;
 import java.util.Arrays;
 
 /**
- * FunctionGraphPanel extends BaseGraphPanel to add functionality for plotting mathematical functions.
+ * A specialized graph panel that can display mathematical functions
+ * Extends BaseGraphPanel to add functionality for plotting functions while maintaining all the base panel's zoom, pan, and drawing capabilities
+ * Handles function discontinuities and invalid points appropriately
  */
 public class FunctionGraphPanel extends BaseGraphPanel {
-    private Function function;     // The function to be plotted
-    private boolean drawFunction = false; // Whether the function should be drawn
+    // The mathematical function to be plotted
+    private Function function;
+    
+    // Whether the function should be drawn on the panel, should be hidden for some time in DrawTheFunction
+    private boolean drawFunction = false;
 
     /**
-     * Constructor that initializes the panel and optionally enables drawing.
+     * Creates a new FunctionGraphPanel with the specified function
      * 
-     * @param function The function to graph
+     * @param function The mathematical function to graph
      * @param shouldDraw Whether the function should be drawn immediately
      */
     public FunctionGraphPanel(Function function, boolean shouldDraw) {
@@ -22,7 +27,7 @@ public class FunctionGraphPanel extends BaseGraphPanel {
     }
 
     /**
-     * Enables or disables drawing of the function and repaints.
+     * Enables or disables drawing of the function
      * 
      * @param shouldDraw true to draw the function, false to hide it
      */
@@ -32,16 +37,19 @@ public class FunctionGraphPanel extends BaseGraphPanel {
     }
 
     /**
-     * Actually draws the function on the panel.
+     * Draws the function on the panel by sampling points along the x-axis and connects them with line segments
+     * 
+     * @param g2 The graphics context to draw with
      */
     private void drawFunction(Graphics2D g2) {
         int width = getWidth();
         int height = getHeight();
 
+        // Set up the drawing style
         g2.setColor(Color.BLUE);
         g2.setStroke(new BasicStroke(2));
 
-        // Calculate points for the function
+        // Prepare arrays for storing points
         int numPoints = width;
         int[] xPoints = new int[numPoints];
         int[] yPoints = new int[numPoints];
@@ -49,13 +57,14 @@ public class FunctionGraphPanel extends BaseGraphPanel {
         
         double prevY = Double.NaN;
         
+        // Sample points along the x-axis
         for (int i = 0; i < numPoints; i++) {
             double x = xMin + i * (xMax - xMin) / numPoints;
             double y = function.evaluate(x);
             
-            // Skip invalid points
+            // Handle invalid points (NaN or infinite)
             if (Double.isNaN(y) || Double.isInfinite(y)) {
-                // End current segment if we hit an invalid point
+                // Draw current segment if we have enough points
                 if (pointCount > 1) {
                     g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
                                   Arrays.copyOf(yPoints, pointCount), 
@@ -71,9 +80,9 @@ public class FunctionGraphPanel extends BaseGraphPanel {
                 int screenX = i;
                 int screenY = (int) ((yMax - y) / (yMax - yMin) * height);
                 
-                // Skip if there's a discontinuity (large jump)
+                // Handle discontinuities (large jumps in y-value)
                 if (!Double.isNaN(prevY) && Math.abs(y - prevY) > (yMax - yMin) / 4) {
-                    // Start a new segment
+                    // Draw current segment and start a new one
                     if (pointCount > 1) {
                         g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
                                       Arrays.copyOf(yPoints, pointCount), 
@@ -82,12 +91,13 @@ public class FunctionGraphPanel extends BaseGraphPanel {
                     pointCount = 0;
                 }
                 
+                // Add point to current segment
                 xPoints[pointCount] = screenX;
                 yPoints[pointCount] = screenY;
                 pointCount++;
                 prevY = y;
             } else {
-                // End current segment if we hit a point outside range
+                // Draw current segment if point is outside visible range
                 if (pointCount > 1) {
                     g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
                                   Arrays.copyOf(yPoints, pointCount), 
@@ -98,7 +108,7 @@ public class FunctionGraphPanel extends BaseGraphPanel {
             }
         }
         
-        // Draw the last segment
+        // Draw the final segment if there are points left
         if (pointCount > 1) {
             g2.drawPolyline(Arrays.copyOf(xPoints, pointCount), 
                           Arrays.copyOf(yPoints, pointCount), 
@@ -107,7 +117,10 @@ public class FunctionGraphPanel extends BaseGraphPanel {
     }
 
     /**
-     * Override paintComponent to add function drawing capability
+     * Overrides the base panel's paint method to add function drawing
+     * Draws the function on top of the grid and axes if enabled
+     * 
+     * @param g The graphics context to draw with
      */
     @Override
     protected void paintComponent(Graphics g) {
@@ -120,7 +133,10 @@ public class FunctionGraphPanel extends BaseGraphPanel {
     }
 
     /**
-     * Sets a new function to be plotted
+     * Changes the function being plotted
+     * The panel will be repainted to show the new function
+     * 
+     * @param newFunction The new function to plot
      */
     public void setFunction(Function newFunction) {
         this.function = newFunction;

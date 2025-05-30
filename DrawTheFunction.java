@@ -3,27 +3,52 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A game mode where players try to draw a function matching a given mathematical expression.
+ * The game provides a graph panel where players can draw their function, and then compares
+ * their drawing to the actual function to calculate accuracy. Players can generate new
+ * functions to practice with and track their performance over multiple attempts.
+ */
 public class DrawTheFunction extends JPanel {
+    // Declares labels showing the function, accuracy, and score
     private JLabel functionLabel;
     private JLabel accuracyLabel;
     private JLabel scoreLabel;
+    
+    // The function that the player is trying to draw
     private Function currentFunction;
+    
+    // The panel where the player draws and the function is displayed
     private FunctionGraphPanel graphPanel;
+    
+    // Whether the panel is currently in drawing mode
     private boolean isDrawingMode = true;
+    
+    // Points drawn by the player that will be compared to the actual function
     private List<Point> userDrawnPoints = new ArrayList<>();
+    
+    // Total number of questions attempted
     private int totalQuestions = 0;
+    
+    // Sum of all accuracy scores for calculating average
     private double totalAccuracy = 0.0;
     
+    /**
+     * Creates a new Draw The Function game panel
+     * Sets up the UI with a title, score display, function display, and buttons for generating functions and confirming drawings
+     * 
+     * @param onBack Callback function to return to the home screen
+     */
     public DrawTheFunction(Runnable onBack) {
-        // Setting the layout for the panel
+        // Set up the main panel layout
         setLayout(new BorderLayout());
 
-        // Create top panel with title and score
+        // Create and configure the top panel with title and score
         JPanel topPanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Welcome to Draw The Function", SwingConstants.CENTER);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
         
-        // Create score label
+        // Create the score label
         scoreLabel = new JLabel("Questions: 0 | Average Accuracy: 0%", SwingConstants.RIGHT);
         scoreLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
         scoreLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -32,30 +57,29 @@ public class DrawTheFunction extends JPanel {
         topPanel.add(scoreLabel, BorderLayout.EAST);
         add(topPanel, BorderLayout.NORTH);
 
-        // Create a panel for the function display
+        // Create and configure the function display panel
         JPanel functionPanel = new JPanel(new BorderLayout());
         functionLabel = new JLabel("Click 'Generate Function' to see a random function", SwingConstants.CENTER);
         functionLabel.setFont(new Font("Monospaced", Font.PLAIN, 16));
         
-        // Set a consistent size for the accuracy label to prevent layout shifts
+        // Create the accuracy label with fixed size to prevent layout shifts
         accuracyLabel = new JLabel("", SwingConstants.CENTER);
         accuracyLabel.setFont(new Font("Monospaced", Font.PLAIN, 16));
-        accuracyLabel.setPreferredSize(new Dimension(400, 30)); // Fixed height
+        accuracyLabel.setPreferredSize(new Dimension(400, 30));
         accuracyLabel.setMinimumSize(new Dimension(400, 30));
         
         functionPanel.add(functionLabel, BorderLayout.NORTH);
         functionPanel.add(accuracyLabel, BorderLayout.SOUTH);
         
-        // Create a panel for buttons
+        // Create and configure the button panel
         JPanel buttonPanel = new JPanel(new FlowLayout());
         
-        // Create the generate function button
+        // Create and configure the generate function button
         JButton generateButton = new JButton("Generate Function");
         generateButton.addActionListener(e -> generateNewFunction());
         
-        // Create confirm button
+        // Create the confirm button
         JButton confirmButton = new JButton("Confirm Drawing");
-        // Style the confirm button to be green
         confirmButton.setBackground(new Color(34, 139, 34)); // Forest green
         confirmButton.setForeground(Color.WHITE);
         confirmButton.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -63,9 +87,8 @@ public class DrawTheFunction extends JPanel {
         confirmButton.setBorderPainted(false);
         confirmButton.addActionListener(e -> confirmDrawing());
         
-        // Create back button
+        // Create the back button
         JButton backButton = new JButton("← Back to Home");
-        // Style the back button to be dark red
         backButton.setBackground(new Color(139, 0, 0));
         backButton.setForeground(Color.WHITE);
         backButton.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -73,41 +96,47 @@ public class DrawTheFunction extends JPanel {
         backButton.setBorderPainted(false);
         backButton.addActionListener(e -> onBack.run());
         
-        // Add buttons to panel
+        // Add buttons to the panel
         buttonPanel.add(generateButton);
         buttonPanel.add(confirmButton);
         buttonPanel.add(backButton);
         
-        // Create a panel to hold both the graph and function info
+        // Create and configure the center panel
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(functionPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
         
-        // Generate initial function
+        // Generate the initial function
         generateNewFunction();
     }
     
     /**
-     * Generates a new random function and displays it
+     * Generates a new random function and updates the display
+     * Clears any previous drawing and resets the panel to drawing mode
      */
     private void generateNewFunction() {
+        // Generate a new random function
         currentFunction = new Function();
         functionLabel.setText("f(x) = " + currentFunction.getExpressionString());
-        // Use a non-breaking space to maintain consistent height
-        accuracyLabel.setText("\u00A0"); // Unicode non-breaking space
+        
+        // Clear previous drawing and accuracy display
+        // Unicode non-breaking space
+        accuracyLabel.setText("\u00A0"); 
         userDrawnPoints.clear();
         isDrawingMode = true;
         
+        // Remove old graph panel if it exists
         if (graphPanel != null) {
             remove(graphPanel);
         }
         
+        // Create and configure new graph panel
         graphPanel = new FunctionGraphPanel(currentFunction, false);
         graphPanel.setDrawingMode(true);
         graphPanel.setControlsEnabled(true);
         
-        // Get the center panel and update its contents
+        // Update the center panel with new components
         JPanel centerPanel = (JPanel) getComponent(1);
         centerPanel.removeAll();
         centerPanel.add(graphPanel, BorderLayout.CENTER);
@@ -119,11 +148,15 @@ public class DrawTheFunction extends JPanel {
     }
     
     /**
-     * Confirms the user's drawing and shows the actual function
+     * Confirms the player's drawing and shows the actual function
+     * Calculates accuracy and updates the score display
      */
     private void confirmDrawing() {
         if (isDrawingMode) {
+            // Switch to evaluation mode
             isDrawingMode = false;
+            
+            // Get the player's drawing and calculate accuracy
             userDrawnPoints = graphPanel.getDrawnPoints();
             double accuracy = calculateAccuracy();
             accuracyLabel.setText(String.format("Accuracy: %.1f%%", accuracy));
@@ -135,22 +168,19 @@ public class DrawTheFunction extends JPanel {
             scoreLabel.setText(String.format("Questions: %d | Average Accuracy: %.1f%%", 
                 totalQuestions, averageAccuracy));
             
-            // Important: First set the user's drawn points before changing other modes
-            // This ensures the drawn points are preserved with their original coordinates
+            // Preserve the player's drawing and show the actual function
             graphPanel.setUserDrawnPoints(userDrawnPoints);
-            
-            // Then change the mode and show the function
             graphPanel.setDrawingMode(false);
             graphPanel.setDrawFunction(true);
             graphPanel.setControlsEnabled(false);
-            
-            // No need to call repaint explicitly, the above methods will handle it
-            // in a way that preserves the coordinate system
         }
     }
     
     /**
-     * Calculates the accuracy of the user's drawing compared to the actual function
+     * Calculates how well the player's drawing matches the actual function
+     * Samples points along the x-axis and compares the y-values
+     * 
+     * @return The accuracy percentage (0-100)
      */
     private double calculateAccuracy() {
         if (userDrawnPoints.isEmpty()) return 0.0;
@@ -201,7 +231,7 @@ public class DrawTheFunction extends JPanel {
                     }
                 }
                 
-                // If no point was drawn near this x-coordinate, use maximum error
+                // Calculate error based on whether a point was found
                 double error;
                 if (pointFound) {
                     error = Math.abs(actualY - drawnY);
@@ -221,8 +251,8 @@ public class DrawTheFunction extends JPanel {
         
         if (validPoints == 0) return 0.0;
         
+        // Calculate final accuracy score
         double averageError = totalError / validPoints;
-        // Strict scoring with 25% y-range as maximum error
         double maxError = (graphPanel.getYMax() - graphPanel.getYMin()) * 0.25;
         double accuracy = Math.max(0, 100 * (1 - averageError / maxError));
         
